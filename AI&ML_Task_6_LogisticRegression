@@ -1,0 +1,47 @@
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import LabelEncoder
+from sklearn.metrics import accuracy_score, confusion_matrix, ConfusionMatrixDisplay
+import matplotlib.pyplot as plt
+
+# Load dataset
+df = pd.read_csv(r'D:\studies\Mamoona\AI&ML_Intern\preprocessed_cereal.csv')
+
+# Create rating_class based on rating
+bins = [0, 40, 70, 100]
+labels = ['Low', 'Medium', 'High']
+df['rating_class'] = pd.cut(df['rating'], bins=bins, labels=labels)
+
+# Drop original rating column
+df = df.drop(columns='rating')
+
+# Prepare features and labels
+X = df.drop(columns='rating_class')
+y = df['rating_class']
+
+# Encode target labels to numerical values
+le = LabelEncoder()
+y_encoded = le.fit_transform(y)
+
+# Train-test split
+X_train, X_test, y_train, y_test = train_test_split(X, y_encoded, test_size=0.2, random_state=42)
+
+# Train Logistic Regression Model
+model = LogisticRegression(max_iter=1000)
+model.fit(X_train, y_train)
+
+# Predict and evaluate
+y_pred = model.predict(X_test)
+accuracy = accuracy_score(y_test, y_pred)
+print("Accuracy:", accuracy)
+
+# Define original class labels
+class_labels = ['Low', 'Medium', 'High']
+
+# Confusion Matrix
+cm = confusion_matrix(y_test, y_pred, labels=[0, 1, 2])
+disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=class_labels)
+disp.plot()
+plt.title("Logistic Regression - Confusion Matrix")
+plt.show()
